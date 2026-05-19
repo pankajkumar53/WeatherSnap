@@ -29,7 +29,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "BASE_URL", "\"${localProperties["BASE_URL"]}\"")
+        buildConfigField("String", "GEO_BASE_URL", "\"${localProperties["GEO_BASE_URL"]}\"")
+        buildConfigField("String", "WEATHER_BASE_URL", "\"${localProperties["WEATHER_BASE_URL"]}\"")
     }
 
     buildTypes {
