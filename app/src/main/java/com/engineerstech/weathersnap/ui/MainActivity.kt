@@ -9,8 +9,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.engineerstech.weathersnap.ui.home.HomeScreen
+import com.engineerstech.weathersnap.ui.navigation.LocalNavigationProvider
+import com.engineerstech.weathersnap.ui.navigation.NavGraph
+import com.engineerstech.weathersnap.ui.navigation.Routes
 import com.engineerstech.weathersnap.ui.theme.WeatherSnapTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -21,29 +27,16 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             WeatherSnapTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                val navController = rememberNavController()
+                CompositionLocalProvider(value = LocalNavigationProvider provides navController) {
+                    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                        NavGraph(
+                            modifier = Modifier.padding(innerPadding),
+                            startDestination = Routes.Home
+                        )
+                    }
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    WeatherSnapTheme {
-        Greeting("Android")
     }
 }
