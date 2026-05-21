@@ -6,8 +6,10 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.engineerstech.weathersnap.ui.home.HomeScreen
 import com.engineerstech.weathersnap.ui.report.CreateReportScreen
+import com.engineerstech.weathersnap.ui.report.SavedReportScreen
 import kotlinx.serialization.Serializable
 
 val LocalNavigationProvider = staticCompositionLocalOf<NavHostController> {
@@ -31,11 +33,12 @@ fun NavGraph(
             HomeScreen()
         }
 
-        composable<Routes.CreateReport> { backStackEntry->
-            val cityName = backStackEntry.arguments?.getString("cityName")
-            val lat = backStackEntry.arguments?.getDouble("lat")
-            val long = backStackEntry.arguments?.getDouble("long")
-            CreateReportScreen(cityName = cityName, lat = lat, long = long)
+        composable<Routes.CreateReport> {
+            CreateReportScreen()
+        }
+
+        composable<Routes.SavedReports> {
+            SavedReportScreen()
         }
 
     }
@@ -45,6 +48,9 @@ fun NavGraph(
 sealed class Routes {
     @Serializable
     data object Home : Routes()
+
+    @Serializable
+    data object SavedReports : Routes()
 
     @Serializable
     data class CreateReport(

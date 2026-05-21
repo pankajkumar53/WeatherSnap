@@ -12,6 +12,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -29,6 +30,7 @@ fun SearchField(searchQuery: String, onValueChange: (String) -> Unit, onClick: (
                 onValueChange = {
                     onValueChange(it)
                 },
+                modifier = Modifier.fillMaxWidth(.7f),
                 label = {
                     Text("City")
                 },
@@ -50,9 +52,7 @@ fun SearchField(searchQuery: String, onValueChange: (String) -> Unit, onClick: (
             onClick = {
                 onClick()
             },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
+            modifier = Modifier.align(Alignment.CenterVertically).padding(bottom = 8.dp),
             colors = ButtonDefaults.buttonColors(containerColor = DarkYellow)
         ) {
             Text("Search", fontSize = 12.sp)

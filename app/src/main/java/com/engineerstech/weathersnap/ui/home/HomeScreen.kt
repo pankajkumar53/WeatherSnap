@@ -1,17 +1,10 @@
 package com.engineerstech.weathersnap.ui.home
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -31,25 +24,20 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.engineerstech.weathersnap.data.api.ApiResult
+import com.engineerstech.weathersnap.domain.models.SearchResults
 import com.engineerstech.weathersnap.domain.models.WeatherResponse
+import com.engineerstech.weathersnap.ui.component.ApiResultContent
 import com.engineerstech.weathersnap.ui.component.CustomColumn
-import com.engineerstech.weathersnap.ui.component.ErrorView
 import com.engineerstech.weathersnap.ui.component.HeaderCard
-import com.engineerstech.weathersnap.ui.component.LoadingView
 import com.engineerstech.weathersnap.ui.component.SearchField
 import com.engineerstech.weathersnap.ui.navigation.LocalNavigationProvider
 import com.engineerstech.weathersnap.ui.navigation.Routes
 import com.engineerstech.weathersnap.ui.theme.AppGray
-import com.engineerstech.weathersnap.ui.theme.BackGroundColor
-import com.engineerstech.weathersnap.ui.theme.BackgroundBottomColor
-import com.engineerstech.weathersnap.ui.theme.BackgroundTopColor
 import com.engineerstech.weathersnap.ui.theme.DarkYellow
 import com.engineerstech.weathersnap.ui.theme.GreenColor
 import com.engineerstech.weathersnap.ui.theme.LightYellow
@@ -66,12 +54,15 @@ fun HomeScreen() {
     val navController = LocalNavigationProvider.current
 
     CustomColumn {
-        /* Banner Card */
+        /* Header Card */
         HeaderCard(
             title = "WeatherSnap",
             subTitle = "Live weather report with camera evidence",
-            buttonTitle = "Reports"
-        ) { }
+            buttonTitle = "Reports",
+            onClick = {
+                navController.navigate(Routes.SavedReports)
+            }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -92,135 +83,104 @@ fun HomeScreen() {
         }
 
         /* Search Data Section with smooth transitions */
-        AnimatedContent(
-            targetState = searchData,
-            transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(250)) },
-            label = "SearchDataAnimation"
-        ) { targetSearchData ->
-            when (targetSearchData) {
-                is ApiResult.Loading -> {
-                    LoadingView(modifier = Modifier.height(150.dp), message = "Searching cities...")
-                }
-
-                is ApiResult.Error -> {
-                    ErrorView(
-                        message = targetSearchData.message ?: "Failed to find locations.",
-                        modifier = Modifier.height(150.dp)
-                    )
-                }
-
-                is ApiResult.Success -> {
-                    val results = targetSearchData.data?.results
-                    if (results.isNullOrEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "No cities found", color = Color.White)
-                        }
-                    } else {
-                        Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(220.dp)
-                                .padding(top = 12.dp),
-                            colors = CardDefaults.cardColors(containerColor = AppGray),
-                        ) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                items(results) { city ->
-                                    OutlinedButton(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(horizontal = 8.dp, vertical = 4.dp),
-                                        onClick = { appViewModel.selectCity(city) },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = if (selected?.name === city.name) Color.White.copy(
-                                                .1f
-                                            ) else Color.Transparent
-                                        )
-                                    ) {
-                                        Text(
-                                            text = "${city.name}, ${city.country}",
-                                            color = Color.White,
-                                            fontSize = 14.sp
-                                        )
-                                    }
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 16.dp),
-                                        thickness = 1.dp,
-                                        color = Color.White.copy(alpha = 0.1f)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                else -> {
-                    Spacer(modifier = Modifier.height(0.dp))
-                }
-            }
+        ApiResultContent(
+            state = searchData,
+            modifier = Modifier.height(150.dp)
+        ) { data ->
+            SearchedCard(data)
         }
 
+
         /* Weather Detail Section with smooth transitions */
-        AnimatedContent(
-            targetState = weatherData,
-            transitionSpec = { fadeIn(tween(400)) togetherWith fadeOut(tween(300)) },
-            label = "WeatherDataAnimation"
-        ) { targetWeatherData ->
-            when (targetWeatherData) {
-                is ApiResult.Loading -> {
-                    LoadingView(
-                        modifier = Modifier.padding(top = 16.dp),
-                        message = "Fetching conditions..."
-                    )
-                }
-
-                is ApiResult.Error -> {
-                    ErrorView(
-                        message = targetWeatherData.message ?: "Unable to fetch weather info.",
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                }
-
-                is ApiResult.Success -> {
-                    val weather = targetWeatherData.data
-                    if (weather != null) {
-                        WeatherCard(
-                            weather = weather,
+        ApiResultContent(state = weatherData ) { weather ->
+            WeatherCard(
+                weather = weather,
+                cityName = "${selected?.name ?: "Unknown Location"}, ${selected?.country ?: ""}",
+                onCreateReport = {
+                    navController.navigate(
+                        Routes.CreateReport(
                             cityName = "${selected?.name ?: "Unknown Location"}, ${selected?.country ?: ""}",
-                            onCreateReport = {
-                                navController.navigate(
-                                    Routes.CreateReport(
-                                        cityName = "${selected?.name ?: "Unknown Location"}, ${selected?.country ?: ""}",
-                                        lat = selected?.latitude ?: 0.0,
-                                        long = selected?.longitude ?: 0.0
-                                    )
-                                )
-                            }
+                            lat = selected?.latitude ?: 0.0,
+                            long = selected?.longitude ?: 0.0
+                        )
+                    )
+                }
+            )
+        }
+
+
+    }
+}
+
+@Composable
+fun SearchedCard(data: SearchResults) {
+    val appViewModel: HomeViewModel = hiltViewModel()
+    val selected = appViewModel.selectedCity.collectAsState().value
+    val results = data.results
+    if (results.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "No cities found",
+                color = Color.White
+            )
+        }
+    } else {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(220.dp)
+                .padding(top = 12.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = AppGray
+            ),
+        ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(results) { city ->
+                    OutlinedButton(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        onClick = {
+                            appViewModel.selectCity(city)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor =
+                                if (selected?.id == city.id)
+                                    Color.White.copy(.1f)
+                                else
+                                    Color.Transparent
+                        )
+                    ) {
+                        Text(
+                            text = "${city.name}, ${city.country}",
+                            color = Color.White
                         )
                     }
-                }
 
-                else -> {
-                    Spacer(modifier = Modifier.height(0.dp))
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                        thickness = 1.dp,
+                        color = Color.White.copy(alpha = 0.1f)
+                    )
                 }
             }
         }
     }
 }
 
-
 @Composable
 fun WeatherCard(
     weather: WeatherResponse,
     cityName: String,
-    buttonDisabled: Boolean = true,
+    buttonEnabled: Boolean = true,
     onCreateReport: () -> Unit
 ) {
     val condition = getWeatherCondition(weather.current.weather_code)
@@ -301,7 +261,7 @@ fun WeatherCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            if (buttonDisabled) {
+            if (buttonEnabled) {
                 // Report Readiness Row
                 Card(
                     modifier = Modifier
@@ -336,17 +296,10 @@ fun WeatherCard(
                 Button(
                     onClick = onCreateReport,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
+                        .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkYellow),
-                    shape = RoundedCornerShape(50.dp)
                 ) {
-                    Text(
-                        text = "Create Report",
-                        color = Color.Black,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Text(text = "Create Report")
                 }
             }
 
@@ -363,8 +316,7 @@ fun StatChip(
 ) {
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
-        shape = RoundedCornerShape(10.dp)
+        colors = CardDefaults.cardColors(containerColor = valueColor.copy(alpha = .1f)),
     ) {
         Column(
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)

@@ -1,11 +1,16 @@
 package com.engineerstech.weathersnap.data.di
 
+import android.content.Context
+import androidx.room.Room
 import com.engineerstech.weathersnap.BuildConfig
 import com.engineerstech.weathersnap.data.api.SearchApiService
 import com.engineerstech.weathersnap.data.api.WeatherApiService
+import com.engineerstech.weathersnap.data.local.AppDatabase
+import com.engineerstech.weathersnap.data.local.ReportDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -79,6 +84,22 @@ object HiltModule {
         @Named("weather") retrofit: Retrofit
     ): WeatherApiService {
         return retrofit.create(WeatherApiService::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "weathersnap_db"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideReportDao(db: AppDatabase): ReportDao {
+        return db.reportDao()
     }
 
 }

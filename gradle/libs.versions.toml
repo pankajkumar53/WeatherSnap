@@ -33,7 +33,7 @@ materialIconsExtended = "1.6.8"
 
 # serialization kotlin
 kotlinxSerializationJson = "1.6.3"
-roomRuntime = "2.5.2"
+roomRuntime = "2.6.1"
 
 # hilt
 hilt = "2.51.1"

@@ -1,11 +1,15 @@
 package com.engineerstech.weathersnap.ui.component
 
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,9 +36,55 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.engineerstech.weathersnap.data.api.ApiResult
 import com.engineerstech.weathersnap.ui.theme.AppGray
 import com.engineerstech.weathersnap.ui.theme.DarkYellow
 import com.engineerstech.weathersnap.ui.theme.RedColor
+
+
+@Composable
+fun <T> ApiResultContent(
+    state: ApiResult<T>,
+    modifier: Modifier = Modifier,
+    loadingMessage: String = "Loading...",
+    errorMessage: String = "Something went wrong",
+    onSuccess: @Composable (T) -> Unit
+) {
+
+    AnimatedContent(
+        targetState = state,
+        transitionSpec = {
+            fadeIn(tween(400)) togetherWith fadeOut(tween(300))
+        },
+        label = "ApiResultAnimation"
+    ) { targetState ->
+
+        when (targetState) {
+
+            is ApiResult.Loading -> {
+                LoadingView(
+                    modifier = modifier,
+                    message = loadingMessage
+                )
+            }
+
+            is ApiResult.Error -> {
+                ErrorView(
+                    modifier = modifier,
+                    message = targetState.message ?: errorMessage
+                )
+            }
+
+            is ApiResult.Success -> {
+                targetState.data?.let {
+                    onSuccess(it)
+                }
+            }
+
+            else -> Unit
+        }
+    }
+}
 
 @Composable
 fun LoadingView(
