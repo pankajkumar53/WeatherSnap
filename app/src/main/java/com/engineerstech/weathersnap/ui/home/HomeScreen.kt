@@ -39,10 +39,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.engineerstech.weathersnap.data.api.ApiResult
 import com.engineerstech.weathersnap.domain.models.WeatherResponse
+import com.engineerstech.weathersnap.ui.component.CustomColumn
 import com.engineerstech.weathersnap.ui.component.ErrorView
 import com.engineerstech.weathersnap.ui.component.HeaderCard
 import com.engineerstech.weathersnap.ui.component.LoadingView
 import com.engineerstech.weathersnap.ui.component.SearchField
+import com.engineerstech.weathersnap.ui.navigation.LocalNavigationProvider
+import com.engineerstech.weathersnap.ui.navigation.Routes
 import com.engineerstech.weathersnap.ui.theme.AppGray
 import com.engineerstech.weathersnap.ui.theme.BackGroundColor
 import com.engineerstech.weathersnap.ui.theme.BackgroundBottomColor
@@ -60,22 +63,9 @@ fun HomeScreen() {
     val searchQuery by appViewModel.searchQuery.collectAsState()
     val selected = appViewModel.selectedCity.collectAsState().value
     val weatherData by appViewModel.weatherData.collectAsState()
+    val navController = LocalNavigationProvider.current
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        BackgroundTopColor,
-                        BackgroundBottomColor,
-                        BackGroundColor
-                    )
-                )
-            )
-            .padding(12.dp)
-    ) {
-
+    CustomColumn {
         /* Banner Card */
         HeaderCard(
             title = "WeatherSnap",
@@ -204,7 +194,15 @@ fun HomeScreen() {
                         WeatherCard(
                             weather = weather,
                             cityName = "${selected?.name ?: "Unknown Location"}, ${selected?.country ?: ""}",
-                            onCreateReport = { /* navigate */ }
+                            onCreateReport = {
+                                navController.navigate(
+                                    Routes.CreateReport(
+                                        cityName = "${selected?.name ?: "Unknown Location"}, ${selected?.country ?: ""}",
+                                        lat = selected?.latitude ?: 0.0,
+                                        long = selected?.longitude ?: 0.0
+                                    )
+                                )
+                            }
                         )
                     }
                 }
@@ -222,6 +220,7 @@ fun HomeScreen() {
 fun WeatherCard(
     weather: WeatherResponse,
     cityName: String,
+    buttonDisabled: Boolean = true,
     onCreateReport: () -> Unit
 ) {
     val condition = getWeatherCondition(weather.current.weather_code)
@@ -302,52 +301,55 @@ fun WeatherCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Report Readiness Row
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.05f))
-            ) {
-                Row(
+            if (buttonDisabled) {
+                // Report Readiness Row
+                Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                        .wrapContentHeight(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.05f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Report readiness",
+                            color = Color.LightGray,
+                            fontSize = 13.sp
+                        )
+                        Text(
+                            text = "Camera and Room DB enabled",
+                            color = Color.White,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Create Report Button
+                Button(
+                    onClick = onCreateReport,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = DarkYellow),
+                    shape = RoundedCornerShape(50.dp)
                 ) {
                     Text(
-                        text = "Report readiness",
-                        color = Color.LightGray,
-                        fontSize = 13.sp
-                    )
-                    Text(
-                        text = "Camera and Room DB enabled",
-                        color = Color.White,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold
+                        text = "Create Report",
+                        color = Color.Black,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Create Report Button
-            Button(
-                onClick = onCreateReport,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = DarkYellow),
-                shape = RoundedCornerShape(50.dp)
-            ) {
-                Text(
-                    text = "Create Report",
-                    color = Color.Black,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium
-                )
-            }
         }
     }
 }

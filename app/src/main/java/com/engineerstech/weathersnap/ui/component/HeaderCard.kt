@@ -66,7 +66,7 @@ fun HeaderCard(title: String, subTitle: String, buttonTitle: String, onClick: ()
                     containerColor = BlackColor.copy(.9f),
                     contentColor = Color.White
                 ),
-                onClick = { }
+                onClick = { onClick() }
             ) {
                 Text(buttonTitle, color = DarkYellow)
             }

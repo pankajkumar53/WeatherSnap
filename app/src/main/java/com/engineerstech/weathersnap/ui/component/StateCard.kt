@@ -88,6 +88,15 @@ fun ErrorView(
     message: String,
     modifier: Modifier = Modifier
 ) {
+    val isNetworkIssue = message.contains("unable to resolve host", ignoreCase = true) ||
+            message.contains("unknownhost", ignoreCase = true)
+
+    val displayMessage = if (isNetworkIssue) {
+        "Check your internet connection first."
+    } else {
+        message
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -116,7 +125,7 @@ fun ErrorView(
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = message,
+                    text = displayMessage,
                     color = Color.LightGray,
                     fontSize = 12.sp,
                     textAlign = TextAlign.Start
