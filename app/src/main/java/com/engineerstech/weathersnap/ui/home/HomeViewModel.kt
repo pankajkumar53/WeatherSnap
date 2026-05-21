@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import com.engineerstech.weathersnap.domain.models.Result
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -31,19 +32,22 @@ class HomeViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    private val _apiTrigger = MutableStateFlow("")
+
     private val searchCache = Collections.synchronizedMap(linkedMapOf<String, SearchResults>())
     private val MAX_CACHE_SIZE = 20
 
     private val _weatherData = MutableStateFlow<ApiResult<WeatherResponse>>(ApiResult.Idle())
     val weatherData: StateFlow<ApiResult<WeatherResponse>> = _weatherData.asStateFlow()
 
-    private val _manualSearchData = MutableStateFlow<ApiResult<SearchResults>>(ApiResult.Idle())
-    val manualSearchData: StateFlow<ApiResult<SearchResults>> = _manualSearchData.asStateFlow()
+    private val _selectedCity = MutableStateFlow<Result?>(null)
+    val selectedCity: StateFlow<Result?> = _selectedCity.asStateFlow()
 
+    private var _isManuallySelected = false
 
     // Search
     @OptIn(ExperimentalCoroutinesApi::class)
-    val searchData: StateFlow<ApiResult<SearchResults>> = _searchQuery
+    val searchData: StateFlow<ApiResult<SearchResults>> = _apiTrigger
         .debounce(500)
         .distinctUntilChanged()
         .flatMapLatest { rawQuery ->
@@ -83,14 +87,27 @@ class HomeViewModel @Inject constructor(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = ApiResult.Idle()
         )
+
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
+        if (!_isManuallySelected) {
+            _apiTrigger.value = query
+        } else {
+            _isManuallySelected = false
+        }
+    }
+
+    fun selectCity(city: Result) {
+        _isManuallySelected = true
+        _selectedCity.value = city
+        _searchQuery.value = "${city.name}, ${city.country}"
     }
 
     fun getWeather(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             _weatherData.value = ApiResult.Loading()
             _weatherData.value = appRepo.getWeather(latitude, longitude)
+            _apiTrigger.value = ""
         }
     }
 }

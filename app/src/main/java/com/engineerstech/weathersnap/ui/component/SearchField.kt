@@ -55,7 +55,7 @@ fun SearchField(searchQuery: String, onValueChange: (String) -> Unit, onClick: (
                 .padding(top = 16.dp),
             colors = ButtonDefaults.buttonColors(containerColor = DarkYellow)
         ) {
-            Text("Search")
+            Text("Search", fontSize = 12.sp)
         }
     }
 

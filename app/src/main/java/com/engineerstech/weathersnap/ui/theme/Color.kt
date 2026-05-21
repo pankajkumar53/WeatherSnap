@@ -19,3 +19,9 @@ val BackgroundTopColor = Color(0xFF2C2F0A)
 val BackgroundBottomColor = Color(0xFF13140C)
 
 val AppGray = Color(0xFF3A3A3A)
+
+val TempColor = Color(0xFF414A06)
+val GreenColor = Color(0xFF4CAF50)
+val SkyBlueColor = Color(0xFF2196F3)
+val LightYellow = Color(0xFF8A7A57)
+val RedColor = Color(0xFFFF4C4C)
