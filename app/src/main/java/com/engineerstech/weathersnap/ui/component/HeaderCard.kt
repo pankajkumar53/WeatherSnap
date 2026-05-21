@@ -55,7 +55,7 @@ fun HeaderCard(title: String, subTitle: String, buttonTitle: String, onClick: ()
                 )
                 Text(
                     subTitle,
-                    fontSize = 11.sp,
+                    fontSize = 12.sp,
                     color = BlackColor
                 )
             }

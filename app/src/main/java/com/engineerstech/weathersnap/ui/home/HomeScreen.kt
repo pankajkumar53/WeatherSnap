@@ -32,6 +32,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.engineerstech.weathersnap.domain.models.SearchResults
 import com.engineerstech.weathersnap.domain.models.WeatherResponse
 import com.engineerstech.weathersnap.ui.component.ApiResultContent
+import com.engineerstech.weathersnap.ui.component.CustomChip
 import com.engineerstech.weathersnap.ui.component.CustomColumn
 import com.engineerstech.weathersnap.ui.component.HeaderCard
 import com.engineerstech.weathersnap.ui.component.SearchField
@@ -239,22 +240,22 @@ fun WeatherCard(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                StatChip(
+                CustomChip(
                     label = "Humidity",
                     value = "${weather.current.relative_humidity_2m}${weather.current_units.relative_humidity_2m}",
-                    valueColor = GreenColor,
+                    color = GreenColor,
                     modifier = Modifier.weight(1f)
                 )
-                StatChip(
+                CustomChip(
                     label = "Wind",
                     value = "${weather.current.wind_speed_10m} ${weather.current_units.wind_speed_10m}",
-                    valueColor = SkyBlueColor,
+                    color = SkyBlueColor,
                     modifier = Modifier.weight(1f)
                 )
-                StatChip(
+                CustomChip(
                     label = "Pressure",
                     value = "${weather.current.pressure_msl.toInt()} hPa",
-                    valueColor = LightYellow,
+                    color = LightYellow,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -303,36 +304,6 @@ fun WeatherCard(
                 }
             }
 
-        }
-    }
-}
-
-@Composable
-fun StatChip(
-    label: String,
-    value: String,
-    valueColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = valueColor.copy(alpha = .1f)),
-    ) {
-        Column(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
-        ) {
-            Text(
-                text = label,
-                color = Color.LightGray,
-                fontSize = 11.sp
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                color = valueColor,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold
-            )
         }
     }
 }

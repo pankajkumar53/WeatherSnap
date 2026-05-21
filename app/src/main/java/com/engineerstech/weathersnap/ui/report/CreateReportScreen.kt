@@ -1,7 +1,6 @@
 package com.engineerstech.weathersnap.ui.report
 
 import android.Manifest
-import android.R
 import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.widget.Toast
@@ -13,13 +12,11 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -57,10 +54,9 @@ import androidx.navigation.toRoute
 import com.engineerstech.weathersnap.data.api.ApiResult
 import com.engineerstech.weathersnap.ui.component.ApiResultContent
 import com.engineerstech.weathersnap.ui.component.CameraScreen
+import com.engineerstech.weathersnap.ui.component.CustomChip
 import com.engineerstech.weathersnap.ui.component.CustomColumn
-import com.engineerstech.weathersnap.ui.component.ErrorView
 import com.engineerstech.weathersnap.ui.component.HeaderCard
-import com.engineerstech.weathersnap.ui.component.LoadingView
 import com.engineerstech.weathersnap.ui.home.HomeViewModel
 import com.engineerstech.weathersnap.ui.home.WeatherCard
 import com.engineerstech.weathersnap.ui.navigation.LocalNavigationProvider
@@ -309,13 +305,13 @@ fun PhotoPreviewCard(
                     .padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                SizeChip(
+                CustomChip(
                     label = "Original",
                     value = formatSize(originalSize),
                     modifier = Modifier.weight(1f),
                     color = GreenColor
                 )
-                SizeChip(
+                CustomChip(
                     label = "Compressed",
                     value = formatSize(compressedSize),
                     modifier = Modifier.weight(1f),
@@ -326,21 +322,6 @@ fun PhotoPreviewCard(
     }
 
 
-}
-
-
-@Composable
-private fun SizeChip(label: String, value: String, modifier: Modifier, color: Color) {
-    Card(
-        modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = color.copy(.1f)),
-        shape = RoundedCornerShape(6.dp)
-    ) {
-        Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-            Text(label, color = Color.White, fontSize = 10.sp)
-            Text(value, color = color, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-        }
-    }
 }
 
 private fun formatSize(bytes: Long): String {

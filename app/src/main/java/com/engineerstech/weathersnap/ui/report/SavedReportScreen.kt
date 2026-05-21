@@ -32,11 +32,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.engineerstech.weathersnap.data.local.ReportEntity
+import com.engineerstech.weathersnap.ui.component.CustomChip
 import com.engineerstech.weathersnap.ui.component.CustomColumn
 import com.engineerstech.weathersnap.ui.component.HeaderCard
 import com.engineerstech.weathersnap.ui.navigation.LocalNavigationProvider
 import com.engineerstech.weathersnap.ui.theme.AppGray
 import com.engineerstech.weathersnap.ui.theme.DarkYellow
+import com.engineerstech.weathersnap.ui.theme.GreenColor
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -44,34 +46,39 @@ import java.util.Locale
 
 @Composable
 fun SavedReportScreen() {
-    val  viewModel: ReportViewModel = hiltViewModel()
+    val viewModel: ReportViewModel = hiltViewModel()
     val reports by viewModel.allReports.collectAsState()
     val count by viewModel.reportsCount.collectAsState()
     val navController = LocalNavigationProvider.current
 
-    CustomColumn {
-        HeaderCard(
-            title = "Saved Reports",
-            subTitle = "$count ${if (count == 1) "report" else "reports"} stored locally",
-            buttonTitle = "Back",
-            onClick = { navController.popBackStack() }
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        if (reports.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = "No reports saved yet", color = Color.Gray)
+    // Set scrollable = false because LazyColumn handles scrolling internally
+    CustomColumn(scrollable = false) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 16.dp)
+        ) {
+            item {
+                HeaderCard(
+                    title = "Saved Reports",
+                    subTitle = "$count ${if (count == 1) "report" else "reports"} stored locally",
+                    buttonTitle = "Back",
+                    onClick = { navController.popBackStack() }
+                )
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
+
+            if (reports.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillParentMaxSize()
+                            .padding(bottom = 100.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "No reports saved yet", color = Color.Gray)
+                    }
+                }
+            } else {
                 items(reports) { report ->
                     ReportItemCard(report = report)
                 }
@@ -93,7 +100,6 @@ fun ReportItemCard(report: ReportEntity) {
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
-            // Captured Image
             AsyncImage(
                 model = File(report.imagePath),
                 contentDescription = "Weather Image",
@@ -107,7 +113,6 @@ fun ReportItemCard(report: ReportEntity) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Info Section
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -129,15 +134,14 @@ fun ReportItemCard(report: ReportEntity) {
                     Text(
                         text = formattedDate,
                         color = Color.Gray,
-                        fontSize = 11.sp
+                        fontSize = 12.sp
                     )
                 }
 
-                // Temp Badge
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFF3E412A)) // Dark olive from design
+                        .background(Color(0xFF3E412A))
                         .padding(horizontal = 12.dp, vertical = 8.dp)
                 ) {
                     Text(
@@ -151,26 +155,24 @@ fun ReportItemCard(report: ReportEntity) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Storage Details
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                StorageDetailBox(
+                CustomChip(
                     label = "Original",
-                    size = formatFileSize(report.originalSize),
-                    textColor = Color(0xFFC49552),
+                    value = formatFileSize(report.originalSize),
+                    color = DarkYellow,
                     modifier = Modifier.weight(1f)
                 )
-                StorageDetailBox(
+                CustomChip(
                     label = "Compressed",
-                    size = formatFileSize(report.compressedSize),
-                    textColor = Color(0xFF52C495),
+                    value = formatFileSize(report.compressedSize),
+                    color = GreenColor,
                     modifier = Modifier.weight(1f)
                 )
             }
 
-            // Notes Section
             if (report.notes.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Box(
@@ -182,30 +184,9 @@ fun ReportItemCard(report: ReportEntity) {
                     Text(
                         text = report.notes,
                         color = Color.LightGray,
-                        fontSize = 13.sp
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun StorageDetailBox(
-    label: String,
-    size: String,
-    textColor: Color,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(Color.White.copy(alpha = 0.05f))
-            .padding(12.dp)
-    ) {
-        Column {
-            Text(text = label, color = Color.Gray, fontSize = 10.sp)
-            Text(text = size, color = textColor, fontWeight = FontWeight.Bold, fontSize = 14.sp)
         }
     }
 }
