@@ -8,6 +8,11 @@ import com.engineerstech.weathersnap.data.local.ReportEntity
 import com.engineerstech.weathersnap.data.repo.AppRepo
 import com.engineerstech.weathersnap.domain.models.WeatherResponse
 import com.engineerstech.weathersnap.ui.home.getWeatherCondition
+import com.engineerstech.weathersnap.util.DraftState
+import com.engineerstech.weathersnap.util.SavedStateKeys.IMAGE_COMPRESSED_SIZE
+import com.engineerstech.weathersnap.util.SavedStateKeys.REPORT_IMAGE_PATH
+import com.engineerstech.weathersnap.util.SavedStateKeys.REPORT_NOTES
+import com.engineerstech.weathersnap.util.SavedStateKeys.IMAGE_ORIGINAL_SIZE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,71 +32,31 @@ class ReportViewModel @Inject constructor(
 ) : ViewModel() {
 
     val allReports: StateFlow<List<ReportEntity>> = appRepo.getAllReports()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val reportsCount: StateFlow<Int> = appRepo.getReportsCount()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = 0
-        )
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
 
-    // ─── Draft State (SavedStateHandle → rotation/process-death safe) ───────────
-
-    private val _notes = MutableStateFlow(
-        savedStateHandle.get<String>(KEY_NOTES) ?: ""
-    )
-    val notes: StateFlow<String> = _notes.asStateFlow()
-
-    private val _capturedImagePath = MutableStateFlow(
-        savedStateHandle.get<String>(KEY_IMAGE_PATH)
-    )
-    val capturedImagePath: StateFlow<String?> = _capturedImagePath.asStateFlow()
-
-    private val _originalSize = MutableStateFlow(
-        savedStateHandle.get<Long>(KEY_ORIGINAL_SIZE) ?: 0L
-    )
-    val originalSize: StateFlow<Long> = _originalSize.asStateFlow()
-
-    private val _compressedSize = MutableStateFlow(
-        savedStateHandle.get<Long>(KEY_COMPRESSED_SIZE) ?: 0L
-    )
-    val compressedSize: StateFlow<Long> = _compressedSize.asStateFlow()
-
-    // ─── Save Report State ───────────────────────────────────────────────────────
+    val notes = DraftState(savedStateHandle, REPORT_NOTES, "")
+    val capturedImagePath = DraftState<String?>(savedStateHandle, REPORT_IMAGE_PATH, null)
+    val originalSize = DraftState(savedStateHandle, IMAGE_ORIGINAL_SIZE, 0L)
+    val compressedSize = DraftState(savedStateHandle, IMAGE_COMPRESSED_SIZE, 0L)
 
     private val _saveState = MutableStateFlow<ApiResult<Unit>>(ApiResult.Idle())
     val saveState: StateFlow<ApiResult<Unit>> = _saveState.asStateFlow()
 
-    // ─── Draft Updaters ──────────────────────────────────────────────────────────
-
-    fun onNotesChanged(value: String) {
-        _notes.value = value
-        savedStateHandle[KEY_NOTES] = value
-    }
+    fun onNotesChanged(value: String) = notes.update(value)
 
     fun onImageCaptured(imagePath: String, origSize: Long, compSize: Long) {
-        _capturedImagePath.value?.let { oldPath ->
+        capturedImagePath.flow.value?.let { oldPath ->
             viewModelScope.launch(Dispatchers.IO) {
-                val oldFile = File(oldPath)
-                if (oldFile.exists()) oldFile.delete()
+                File(oldPath).takeIf { it.exists() }?.delete()
             }
         }
-
-        _capturedImagePath.value = imagePath
-        _originalSize.value = origSize
-        _compressedSize.value = compSize
-
-        savedStateHandle[KEY_IMAGE_PATH] = imagePath
-        savedStateHandle[KEY_ORIGINAL_SIZE] = origSize
-        savedStateHandle[KEY_COMPRESSED_SIZE] = compSize
+        capturedImagePath.update(imagePath)
+        originalSize.update(origSize)
+        compressedSize.update(compSize)
     }
-
-    // ─── Save Report ─────────────────────────────────────────────────────────────
 
     fun saveReport(
         cityName: String,
@@ -103,68 +68,43 @@ class ReportViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             _saveState.value = ApiResult.Loading()
-
             val result = withContext(Dispatchers.IO) {
                 try {
-                    val report = ReportEntity(
-                        cityName = cityName,
-                        temperature = weather.current.temperature_2m,
-                        condition = getWeatherCondition(weather.current.weather_code),
-                        humidity = weather.current.relative_humidity_2m,
-                        windSpeed = weather.current.wind_speed_10m,
-                        pressure = weather.current.pressure_msl,
-                        notes = notes,
-                        imagePath = imagePath,
-                        originalSize = originalSizeBytes,
-                        compressedSize = compressedSizeBytes
+                    appRepo.saveReport(
+                        ReportEntity(
+                            cityName = cityName,
+                            temperature = weather.current.temperature_2m,
+                            condition = getWeatherCondition(weather.current.weather_code),
+                            humidity = weather.current.relative_humidity_2m,
+                            windSpeed = weather.current.wind_speed_10m,
+                            pressure = weather.current.pressure_msl,
+                            notes = notes,
+                            imagePath = imagePath,
+                            originalSize = originalSizeBytes,
+                            compressedSize = compressedSizeBytes
+                        )
                     )
-                    appRepo.saveReport(report = report)
                     ApiResult.Success(Unit)
                 } catch (e: Exception) {
                     ApiResult.Error(e.message ?: "Failed to save report")
                 }
             }
-
             _saveState.value = result
-
-            // Draft clear karo aur original file delete karo — sirf success par
-            if (result is ApiResult.Success) {
-                clearDraft(deleteImageFile = false) // compressed file Room mein save hai
-            }
+            if (result is ApiResult.Success) clearDraft(deleteImageFile = false)
         }
     }
 
-    // ─── Cleanup ─────────────────────────────────────────────────────────────────
-
-    fun onDiscardDraft() {
-        clearDraft(deleteImageFile = true)
-    }
-
-    private fun clearDraft(deleteImageFile: Boolean) {
+    fun clearDraft(deleteImageFile: Boolean) {
         if (deleteImageFile) {
-            _capturedImagePath.value?.let { path ->
+            capturedImagePath.flow.value?.let { path ->
                 viewModelScope.launch(Dispatchers.IO) {
-                    val file = File(path)
-                    if (file.exists()) file.delete()
+                    File(path).takeIf { it.exists() }?.delete()
                 }
             }
         }
-
-        _notes.value = ""
-        _capturedImagePath.value = null
-        _originalSize.value = 0L
-        _compressedSize.value = 0L
-
-        savedStateHandle.remove<String>(KEY_NOTES)
-        savedStateHandle.remove<String>(KEY_IMAGE_PATH)
-        savedStateHandle.remove<Long>(KEY_ORIGINAL_SIZE)
-        savedStateHandle.remove<Long>(KEY_COMPRESSED_SIZE)
-    }
-
-    companion object {
-        private const val KEY_NOTES = "draft_notes"
-        private const val KEY_IMAGE_PATH = "draft_image_path"
-        private const val KEY_ORIGINAL_SIZE = "draft_original_size"
-        private const val KEY_COMPRESSED_SIZE = "draft_compressed_size"
+        notes.clear("")
+        capturedImagePath.clear(null)
+        originalSize.clear(0L)
+        compressedSize.clear(0L)
     }
 }

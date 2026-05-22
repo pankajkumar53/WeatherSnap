@@ -1,5 +1,9 @@
 package com.engineerstech.weathersnap.domain.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class Result(
     val admin1: String,
     val admin1_id: Int,
@@ -19,4 +23,4 @@ data class Result(
     val population: Int,
     val postcodes: List<String>,
     val timezone: String
-)
+): Parcelable

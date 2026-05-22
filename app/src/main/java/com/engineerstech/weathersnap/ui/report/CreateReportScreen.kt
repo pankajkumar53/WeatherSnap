@@ -2,6 +2,7 @@ package com.engineerstech.weathersnap.ui.report
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -36,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,6 +67,8 @@ import com.engineerstech.weathersnap.ui.theme.AppGray
 import com.engineerstech.weathersnap.ui.theme.DarkYellow
 import com.engineerstech.weathersnap.ui.theme.GreenColor
 import com.engineerstech.weathersnap.ui.theme.LightYellow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun CreateReportScreen() {
@@ -81,10 +85,10 @@ fun CreateReportScreen() {
 
     val weatherData by homeViewModel.weatherData.collectAsState()
     val saveState by reportViewModel.saveState.collectAsState()
-    val capturedImagePath by reportViewModel.capturedImagePath.collectAsState()
-    val originalSize by reportViewModel.originalSize.collectAsState()
-    val compressedSize by reportViewModel.compressedSize.collectAsState()
-    val notes by reportViewModel.notes.collectAsState()
+    val capturedImagePath by reportViewModel.capturedImagePath.flow.collectAsState()
+    val originalSize by reportViewModel.originalSize.flow.collectAsState()
+    val compressedSize by reportViewModel.compressedSize.flow.collectAsState()
+    val notes by reportViewModel.notes.flow.collectAsState()
 
     val currentWeather = (weatherData as? ApiResult.Success)?.data
     val isSaving = saveState is ApiResult.Loading
@@ -127,7 +131,7 @@ fun CreateReportScreen() {
             subTitle = "Capture, compress, annotate",
             buttonTitle = "Back"
         ) {
-            reportViewModel.onDiscardDraft()
+            reportViewModel.clearDraft(deleteImageFile = true)
             navController.popBackStack()
         }
 
@@ -198,7 +202,7 @@ fun CreateReportScreen() {
                         compressedSizeBytes = compressedSize
                     )
                 } else {
-                    Toast.makeText(context, "add all field", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Please complete all fields", Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
@@ -249,20 +253,27 @@ fun PhotoPreviewCard(
                 transitionSpec = { fadeIn(tween(500)) togetherWith fadeOut(tween(300)) },
                 label = "ImagePreview"
             ) { path ->
-                path.let {
-                    val bitmap = remember(it) { BitmapFactory.decodeFile(it) }
-                    bitmap?.let { bmp ->
-                        Image(
-                            bitmap = bmp.asImageBitmap(),
-                            contentDescription = "Captured photo",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .wrapContentHeight()
-                                .padding(12.dp)
-                                .clip(RoundedCornerShape(10.dp)),
-                            contentScale = ContentScale.Crop
-                        )
+                val bitmap by produceState<Bitmap?>(initialValue = null, key1 = path) {
+                    value = withContext(Dispatchers.IO) {
+                        try {
+                            BitmapFactory.decodeFile(path)
+                        } catch (e: Exception) {
+                            null
+                        }
                     }
+                }
+                
+                bitmap?.let { bmp ->
+                    Image(
+                        bitmap = bmp.asImageBitmap(),
+                        contentDescription = "Captured photo",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .padding(12.dp)
+                            .clip(RoundedCornerShape(10.dp)),
+                        contentScale = ContentScale.Crop
+                    )
                 }
             }
         } else {

@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.jetbrains.kotlin.kapt)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.dagger.hilt)
+    alias(libs.plugins.kotlin.parcelize)
 }
 
 val localProperties = Properties().apply {

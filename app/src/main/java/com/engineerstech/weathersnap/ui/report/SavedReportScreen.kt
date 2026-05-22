@@ -36,6 +36,7 @@ import com.engineerstech.weathersnap.ui.component.CustomChip
 import com.engineerstech.weathersnap.ui.component.CustomColumn
 import com.engineerstech.weathersnap.ui.component.HeaderCard
 import com.engineerstech.weathersnap.ui.navigation.LocalNavigationProvider
+import com.engineerstech.weathersnap.ui.navigation.Routes
 import com.engineerstech.weathersnap.ui.theme.AppGray
 import com.engineerstech.weathersnap.ui.theme.DarkYellow
 import com.engineerstech.weathersnap.ui.theme.GreenColor
@@ -51,7 +52,6 @@ fun SavedReportScreen() {
     val count by viewModel.reportsCount.collectAsState()
     val navController = LocalNavigationProvider.current
 
-    // Set scrollable = false because LazyColumn handles scrolling internally
     CustomColumn(scrollable = false) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
@@ -63,7 +63,7 @@ fun SavedReportScreen() {
                     title = "Saved Reports",
                     subTitle = "$count ${if (count == 1) "report" else "reports"} stored locally",
                     buttonTitle = "Back",
-                    onClick = { navController.popBackStack() }
+                    onClick = { navController.navigate(Routes.Home) }
                 )
             }
 

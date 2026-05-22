@@ -1,5 +1,9 @@
 package com.engineerstech.weathersnap.domain.models
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class CurrentUnits(
     val interval: String,
     val pressure_msl: String,
@@ -8,4 +12,4 @@ data class CurrentUnits(
     val time: String,
     val weather_code: String,
     val wind_speed_10m: String
-)
+): Parcelable

@@ -49,8 +49,8 @@ import com.engineerstech.weathersnap.ui.theme.TempColor
 fun HomeScreen() {
     val appViewModel: HomeViewModel = hiltViewModel()
     val searchData by appViewModel.searchData.collectAsState()
-    val searchQuery by appViewModel.searchQuery.collectAsState()
-    val selected = appViewModel.selectedCity.collectAsState().value
+    val searchQuery by appViewModel.searchQuery.flow.collectAsState()
+    val selected = appViewModel.selectedCity.flow.collectAsState().value
     val weatherData by appViewModel.weatherData.collectAsState()
     val navController = LocalNavigationProvider.current
 
@@ -116,7 +116,7 @@ fun HomeScreen() {
 @Composable
 fun SearchedCard(data: SearchResults) {
     val appViewModel: HomeViewModel = hiltViewModel()
-    val selected = appViewModel.selectedCity.collectAsState().value
+    val selected = appViewModel.selectedCity.flow.collectAsState().value
     val results = data.results
     if (results.isEmpty()) {
         Box(
