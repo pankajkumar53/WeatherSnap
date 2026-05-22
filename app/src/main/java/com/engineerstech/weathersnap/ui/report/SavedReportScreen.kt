@@ -26,11 +26,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import com.engineerstech.weathersnap.R
 import com.engineerstech.weathersnap.data.local.ReportEntity
 import com.engineerstech.weathersnap.ui.component.CustomChip
 import com.engineerstech.weathersnap.ui.component.CustomColumn
@@ -60,9 +62,13 @@ fun SavedReportScreen() {
         ) {
             item {
                 HeaderCard(
-                    title = "Saved Reports",
-                    subTitle = "$count ${if (count == 1) "report" else "reports"} stored locally",
-                    buttonTitle = "Back",
+                    title = stringResource(R.string.saved_reports),
+                    subTitle = stringResource(
+                        R.string.stored_locally,
+                        count,
+                        if (count == 1) stringResource(R.string.report) else stringResource(R.string.reports)
+                    ),
+                    buttonTitle = stringResource(R.string.back),
                     onClick = { navController.navigate(Routes.Home) }
                 )
             }
@@ -75,7 +81,7 @@ fun SavedReportScreen() {
                             .padding(bottom = 100.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(text = "No reports saved yet", color = Color.Gray)
+                        Text(text = stringResource(R.string.no_reports_saved_yet), color = Color.Gray)
                     }
                 }
             } else {
@@ -102,7 +108,7 @@ fun ReportItemCard(report: ReportEntity) {
         ) {
             AsyncImage(
                 model = File(report.imagePath),
-                contentDescription = "Weather Image",
+                contentDescription = stringResource(R.string.weather_image),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
@@ -160,13 +166,13 @@ fun ReportItemCard(report: ReportEntity) {
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 CustomChip(
-                    label = "Original",
+                    label = stringResource(R.string.original),
                     value = formatFileSize(report.originalSize),
                     color = DarkYellow,
                     modifier = Modifier.weight(1f)
                 )
                 CustomChip(
-                    label = "Compressed",
+                    label = stringResource(R.string.compressed),
                     value = formatFileSize(report.compressedSize),
                     color = GreenColor,
                     modifier = Modifier.weight(1f)

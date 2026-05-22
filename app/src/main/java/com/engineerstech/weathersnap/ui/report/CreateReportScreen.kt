@@ -47,12 +47,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.toRoute
+import com.engineerstech.weathersnap.R
 import com.engineerstech.weathersnap.data.api.ApiResult
 import com.engineerstech.weathersnap.ui.component.ApiResultContent
 import com.engineerstech.weathersnap.ui.component.CameraScreen
@@ -127,9 +129,9 @@ fun CreateReportScreen() {
     CustomColumn {
 
         HeaderCard(
-            title = "Create Report",
-            subTitle = "Capture, compress, annotate",
-            buttonTitle = "Back"
+            title = stringResource(R.string.create_report),
+            subTitle = stringResource(R.string.capture_compress_annotate),
+            buttonTitle = stringResource(R.string.back)
         ) {
             reportViewModel.clearDraft(deleteImageFile = true)
             navController.popBackStack()
@@ -140,7 +142,7 @@ fun CreateReportScreen() {
         ApiResultContent(weatherData) { weather ->
             WeatherCard(
                 weather = weather,
-                cityName = cityName ?: "Unknown Location",
+                cityName = cityName ?: stringResource(R.string.unknown_location),
                 buttonEnabled = false,
                 onCreateReport = {}
             )
@@ -163,7 +165,7 @@ fun CreateReportScreen() {
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    "Field Notes",
+                    text = stringResource(R.string.field_notes),
                     color = Color.White,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.SemiBold
@@ -173,7 +175,7 @@ fun CreateReportScreen() {
                     value = notes,
                     onValueChange = { reportViewModel.onNotesChanged(it) },
                     minLines = 4,
-                    placeholder = { Text("Notes", color = Color.Gray) },
+                    placeholder = { Text(text = stringResource(R.string.notes), color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
@@ -202,7 +204,8 @@ fun CreateReportScreen() {
                         compressedSizeBytes = compressedSize
                     )
                 } else {
-                    Toast.makeText(context, "Please complete all fields", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,
+                        context.getString(R.string.please_complete_all_fields), Toast.LENGTH_SHORT).show()
                 }
             },
             modifier = Modifier
@@ -217,7 +220,7 @@ fun CreateReportScreen() {
                     strokeWidth = 2.dp
                 )
             } else {
-                Text("Save Report")
+                Text(stringResource(R.string.save_report))
             }
         }
 
@@ -251,7 +254,7 @@ fun PhotoPreviewCard(
             AnimatedContent(
                 targetState = capturedImagePath,
                 transitionSpec = { fadeIn(tween(500)) togetherWith fadeOut(tween(300)) },
-                label = "ImagePreview"
+                label = stringResource(R.string.imagepreview)
             ) { path ->
                 val bitmap by produceState<Bitmap?>(initialValue = null, key1 = path) {
                     value = withContext(Dispatchers.IO) {
@@ -266,7 +269,7 @@ fun PhotoPreviewCard(
                 bitmap?.let { bmp ->
                     Image(
                         bitmap = bmp.asImageBitmap(),
-                        contentDescription = "Captured photo",
+                        contentDescription = stringResource(R.string.captured_photo),
                         modifier = Modifier
                             .fillMaxWidth()
                             .wrapContentHeight()
@@ -281,7 +284,7 @@ fun PhotoPreviewCard(
                 .fillMaxWidth()
                 .height(200.dp)) {
                 Text(
-                    "Photo preview",
+                    text = stringResource(R.string.photo_preview),
                     color = Color.LightGray,
                     fontSize = 14.sp,
                     modifier = Modifier.align(Alignment.Center)
@@ -305,7 +308,9 @@ fun PhotoPreviewCard(
             colors = ButtonDefaults.buttonColors(containerColor = DarkYellow),
         ) {
             Text(
-                text = if (capturedImagePath != null) "Retake Photo" else "Capture Photo",
+                text = if (capturedImagePath != null) stringResource(R.string.retake_photo) else stringResource(
+                    R.string.capture_photo
+                ),
             )
         }
 
@@ -317,13 +322,13 @@ fun PhotoPreviewCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CustomChip(
-                    label = "Original",
+                    label = stringResource(R.string.original),
                     value = formatSize(originalSize),
                     modifier = Modifier.weight(1f),
                     color = GreenColor
                 )
                 CustomChip(
-                    label = "Compressed",
+                    label = stringResource(R.string.compressed),
                     value = formatSize(compressedSize),
                     modifier = Modifier.weight(1f),
                     color = LightYellow

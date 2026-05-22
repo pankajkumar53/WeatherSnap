@@ -25,10 +25,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.engineerstech.weathersnap.R
 import com.engineerstech.weathersnap.domain.models.SearchResults
 import com.engineerstech.weathersnap.domain.models.WeatherResponse
 import com.engineerstech.weathersnap.ui.component.ApiResultContent
@@ -38,6 +40,7 @@ import com.engineerstech.weathersnap.ui.component.HeaderCard
 import com.engineerstech.weathersnap.ui.component.SearchField
 import com.engineerstech.weathersnap.ui.navigation.LocalNavigationProvider
 import com.engineerstech.weathersnap.ui.navigation.Routes
+import com.engineerstech.weathersnap.ui.navigation.Routes.CreateReport
 import com.engineerstech.weathersnap.ui.theme.AppGray
 import com.engineerstech.weathersnap.ui.theme.DarkYellow
 import com.engineerstech.weathersnap.ui.theme.GreenColor
@@ -57,9 +60,9 @@ fun HomeScreen() {
     CustomColumn {
         /* Header Card */
         HeaderCard(
-            title = "WeatherSnap",
-            subTitle = "Live weather report with camera evidence",
-            buttonTitle = "Reports",
+            title = stringResource(R.string.weathersnap),
+            subTitle = stringResource(R.string.live_weather_report_with_camera_evidence),
+            buttonTitle = stringResource(R.string.reports),
             onClick = {
                 navController.navigate(Routes.SavedReports)
             }
@@ -96,10 +99,10 @@ fun HomeScreen() {
         ApiResultContent(state = weatherData ) { weather ->
             WeatherCard(
                 weather = weather,
-                cityName = "${selected?.name ?: "Unknown Location"}, ${selected?.country ?: ""}",
+                cityName = "${selected?.name ?: stringResource(R.string.unknown_location)}, ${selected?.country ?: ""}",
                 onCreateReport = {
                     navController.navigate(
-                        Routes.CreateReport(
+                        CreateReport(
                             cityName = "${selected?.name ?: "Unknown Location"}, ${selected?.country ?: ""}",
                             lat = selected?.latitude ?: 0.0,
                             long = selected?.longitude ?: 0.0
@@ -126,7 +129,7 @@ fun SearchedCard(data: SearchResults) {
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "No cities found",
+                text = stringResource(R.string.no_cities_found),
                 color = Color.White
             )
         }
@@ -241,19 +244,19 @@ fun WeatherCard(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CustomChip(
-                    label = "Humidity",
+                    label = stringResource(R.string.humidity),
                     value = "${weather.current.relative_humidity_2m}${weather.current_units.relative_humidity_2m}",
                     color = GreenColor,
                     modifier = Modifier.weight(1f)
                 )
                 CustomChip(
-                    label = "Wind",
+                    label = stringResource(R.string.wind),
                     value = "${weather.current.wind_speed_10m} ${weather.current_units.wind_speed_10m}",
                     color = SkyBlueColor,
                     modifier = Modifier.weight(1f)
                 )
                 CustomChip(
-                    label = "Pressure",
+                    label = stringResource(R.string.pressure),
                     value = "${weather.current.pressure_msl.toInt()} hPa",
                     color = LightYellow,
                     modifier = Modifier.weight(1f)
@@ -278,12 +281,12 @@ fun WeatherCard(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Report readiness",
+                            text = stringResource(R.string.report_readiness),
                             color = Color.LightGray,
                             fontSize = 13.sp
                         )
                         Text(
-                            text = "Camera and Room DB enabled",
+                            text = stringResource(R.string.camera_and_room_db_enabled),
                             color = Color.White,
                             fontSize = 13.sp,
                             fontWeight = FontWeight.SemiBold
@@ -300,7 +303,7 @@ fun WeatherCard(
                         .fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = DarkYellow),
                 ) {
-                    Text(text = "Create Report")
+                    Text(text = stringResource(R.string.create_report))
                 }
             }
 

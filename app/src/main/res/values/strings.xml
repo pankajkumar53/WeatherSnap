@@ -1,3 +1,32 @@
 <resources>
     <string name="app_name">WeatherSnap</string>
+    <string name="weathersnap">WeatherSnap</string>
+    <string name="live_weather_report_with_camera_evidence">Live weather report with camera evidence</string>
+    <string name="reports">Reports</string>
+    <string name="unknown_location">Unknown Location</string>
+    <string name="no_cities_found">No cities found</string>
+    <string name="humidity">Humidity</string>
+    <string name="wind">Wind</string>
+    <string name="pressure">Pressure</string>
+    <string name="report_readiness">Report readiness</string>
+    <string name="camera_and_room_db_enabled">Camera and Room DB enabled</string>
+    <string name="create_report">Create Report</string>
+    <string name="capture_compress_annotate">Capture, compress, annotate</string>
+    <string name="back">Back</string>
+    <string name="field_notes">Field Notes</string>
+    <string name="notes">Notes</string>
+    <string name="please_complete_all_fields">Please complete all fields</string>
+    <string name="save_report">Save Report</string>
+    <string name="imagepreview">ImagePreview</string>
+    <string name="captured_photo">Captured photo</string>
+    <string name="photo_preview">Photo preview</string>
+    <string name="retake_photo">Retake Photo</string>
+    <string name="capture_photo">Capture Photo</string>
+    <string name="original">Original</string>
+    <string name="compressed">Compressed</string>
+    <string name="saved_reports">Saved Reports</string>
+    <string name="report">report</string>
+    <string name="stored_locally">%1$d %2$s stored locally</string>
+    <string name="no_reports_saved_yet">No reports saved yet</string>
+    <string name="weather_image">Weather Image</string>
 </resources>
